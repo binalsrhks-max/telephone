@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>전화번호 안내</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, "Noto Sans KR", sans-serif;
+    background: #f4f6f9;
+    color: #222;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+/* 상단 */
+.header {
+    background: white;
+    border-radius: 18px;
+    padding: 30px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+}
+
+.header h1 {
+    margin: 0 0 8px;
+    font-size: 30px;
+}
+
+.header p {
+    margin: 0;
+    color: #777;
+}
+
+/* 검색 */
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.search-box input {
+    flex: 1;
+    height: 55px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    padding: 0 18px;
+    font-size: 17px;
+    outline: none;
+}
+
+.search-box input:focus {
+    border-color: #3769d5;
+}
+
+.search-button {
+    width: 110px;
+    border: none;
+    border-radius: 12px;
+    background: #3769d5;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.search-button:hover {
+    background: #2855b5;
+}
+
+/* 필터 */
+.filters {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.filters select {
+    height: 42px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0 12px;
+    background: white;
+}
+
+/* 검색 결과 */
+.result-info {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 5px 12px;
+    color: #666;
+}
+
+.result-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 15px;
+}
+
+/* 전화번호 카드 */
+.card {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    transition: 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 18px rgba(0,0,0,0.1);
+}
+
+.department {
+    color: #3769d5;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 7px;
+}
+
+.name {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.info {
+    display: grid;
+    grid-template-columns: 65px 1fr;
+    gap: 7px;
+    font-size: 14px;
+}
+
+.label {
+    color: #999;
+}
+
+.phone-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.phone {
+    flex: 1;
+    color: #222;
+    text-decoration: none;
+    font-size: 21px;
+    font-weight: bold;
+}
+
+.phone:hover {
+    color: #3769d5;
+}
+
+.copy-button {
+    border: none;
+    border-radius: 7px;
+    padding: 8px 12px;
+    background: #edf1f7;
+    cursor: pointer;
+}
+
+.copy-button:hover {
+    background: #dfe5ef;
+}
+
+/* 검색어 강조 */
+mark {
+    background: #fff09c;
+    padding: 1px 2px;
+    border-radius: 3px;
+}
+
+/* 결과 없음 */
+.no-result {
+    grid-column: 1 / -1;
+    background: white;
+    border-radius: 15px;
+    padding: 50px;
+    text-align: center;
+    color: #777;
+}
+
+/* 모바일 */
+@media (max-width: 600px) {
+
+    .container {
+        padding: 15px;
+    }
+
+    .header {
+        padding: 20px;
+    }
+
+    .header h1 {
+        font-size: 25px;
+    }
+
+    .search-box {
+        flex-direction: column;
+    }
+
+    .search-button {
+        width: 100%;
+        height: 48px;
+    }
+
+    .filters {
+        flex-direction: column;
+    }
+
+    .filters select {
+        width: 100%;
+    }
+
+    .result-list {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <!-- 상단 -->
+    <div class="header">
+
+        <h1>📞 전화번호 안내</h1>
+
+        <p>
+            이름, 전화번호, 부서 등을 검색할 수 있습니다.
+        </p>
+
+        <!-- 검색창 -->
+        <div class="search-box">
+
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="이름 또는 전화번호를 입력하세요"
+            >
+
+            <button
+                class="search-button"
+                onclick="searchData()"
+            >
+                검색
+            </button>
+
+        </div>
+
+
+        <!-- 필터 -->
+        <div class="filters">
+
+            <select id="departmentFilter">
+                <option value="">전체 부서</option>
+            </select>
+
+            <select id="typeFilter">
+                <option value="">전체 구분</option>
+            </select>
+
+        </div>
+
+    </div>
+
+
+    <!-- 검색 결과 -->
+    <div class="result-info">
+
+        <span id="resultCount">
+            검색 결과 0건
+        </span>
+
+        <span>
+            전체 <b id="totalCount">0</b>건
+        </span>
+
+    </div>
+
+
+    <div
+        id="resultList"
+        class="result-list"
+    ></div>
+
+</div>
+
+
+<script>
+
+/*
+==================================================
+전화번호 데이터
+==================================================
+
+엑셀 데이터를 아래와 같은 형태로 넣으면 됩니다.
+
+{
+    department: "간호국",
+    name: "홍길동",
+    type: "직원",
+    phone: "033-000-0000",
+    location: "본관 3층"
+}
+
+*/
+
+const DATA = [
+
+    {
+        department: "간호국",
+        name: "홍길동",
+        type: "직원",
+        phone: "033-000-0000",
+        location: "본관 3층"
+    },
+
+    {
+        department: "시설관리팀",
+        name: "김철수",
+        type: "직원",
+        phone: "033-000-0001",
+        location: "별관 1층"
+    },
+
+    {
+        department: "안전보건팀",
+        name: "이영희",
+        type: "직원",
+        phone: "033-000-0002",
+        location: "본관 2층"
+    }
+
+];
+
+
+/*
+==================================================
+페이지 초기화
+==================================================
+*/
+
+document.getElementById("totalCount").innerText =
+    DATA.length;
+
+
+/*
+==================================================
+부서 목록 생성
+==================================================
+*/
+
+function createDepartmentList() {
+
+    const select =
+        document.getElementById("departmentFilter");
+
+    const departments =
+        [...new Set(
+            DATA
+                .map(item => item.department)
+                .filter(Boolean)
+        )]
+        .sort();
+
+    departments.forEach(department => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = department;
+        option.innerText = department;
+
+        select.appendChild(option);
+
+    });
+}
+
+
+/*
+==================================================
+구분 목록 생성
+==================================================
+*/
+
+function createTypeList() {
+
+    const select =
+        document.getElementById("typeFilter");
+
+    const types =
+        [...new Set(
+            DATA
+                .map(item => item.type)
+                .filter(Boolean)
+        )]
+        .sort();
+
+    types.forEach(type => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = type;
+        option.innerText = type;
+
+        select.appendChild(option);
+
+    });
+}
+
+
+/*
+==================================================
+검색어 정리
+==================================================
+*/
+
+function normalize(text) {
+
+    return String(text || "")
+        .toLowerCase()
+        .replace(/\s+/g, "");
+
+}
+
+
+/*
+==================================================
+검색어 강조
+==================================================
+*/
+
+function highlight(text, keyword) {
+
+    if (!keyword) {
+        return escapeHtml(text);
+    }
+
+    let result =
+        escapeHtml(text);
+
+    const words =
+        keyword
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+
+    words.forEach(word => {
+
+        const safeWord =
+            escapeRegExp(
+                escapeHtml(word)
+            );
+
+        result =
+            result.replace(
+                new RegExp(
+                    "(" + safeWord + ")",
+                    "gi"
+                ),
+                "<mark>$1</mark>"
+            );
+
+    });
+
+    return result;
+}
+
+
+/*
+==================================================
+HTML 보안 처리
+==================================================
+*/
+
+function escapeHtml(text) {
+
+    return String(text || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+/*
+==================================================
+정규식 특수문자 처리
+==================================================
+*/
+
+function escapeRegExp(text) {
+
+    return text.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&"
+    );
+
+}
+
+
+/*
+==================================================
+전화번호 검색
+==================================================
+*/
+
+function searchData() {
+
+    const keyword =
+        normalize(
+            document.getElementById(
+                "searchInput"
+            ).value
+        );
+
+    const department =
+        document.getElementById(
+            "departmentFilter"
+        ).value;
+
+    const type =
+        document.getElementById(
+            "typeFilter"
+        ).value;
+
+
+    const result =
+        DATA.filter(item => {
+
+            const searchText =
+                normalize(
+                    item.department +
+                    " " +
+                    item.name +
+                    " " +
+                    item.type +
+                    " " +
+                    item.phone +
+                    " " +
+                    item.location
+                );
+
+
+            const keywordMatch =
+                !keyword ||
+                searchText.includes(keyword);
+
+
+            const departmentMatch =
+                !department ||
+                item.department === department;
+
+
+            const typeMatch =
+                !type ||
+                item.type === type;
+
+
+            return (
+                keywordMatch &&
+                departmentMatch &&
+                typeMatch
+            );
+
+        });
+
+
+    displayResult(result, keyword);
+
+}
+
+
+/*
+==================================================
+검색 결과 출력
+==================================================
+*/
+
+function displayResult(data, keyword) {
+
+    const list =
+        document.getElementById(
+            "resultList"
+        );
+
+    const count =
+        document.getElementById(
+            "resultCount"
+        );
+
+
+    count.innerText =
+        "검색 결과 " +
+        data.length.toLocaleString() +
+        "건";
+
+
+    if (data.length === 0) {
+
+        list.innerHTML = `
+            <div class="no-result">
+                검색 결과가 없습니다.<br>
+                검색어 또는 검색 조건을 확인해주세요.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    list.innerHTML =
+        data.map(item => {
+
+            const phone =
+                item.phone || "-";
+
+
+            const tel =
+                phone.replace(
+                    /[^0-9+#*]/g,
+                    ""
+                );
+
+
+            return `
+
+                <div class="card">
+
+                    <div class="department">
+                        ${highlight(
+                            item.department,
+                            keyword
+                        )}
+                    </div>
+
+
+                    <div class="name">
+                        ${highlight(
+                            item.name,
+                            keyword
+                        )}
+                    </div>
+
+
+                    <div class="info">
+
+                        <div class="label">
+                            구분
+                        </div>
+
+                        <div>
+                            ${highlight(
+                                item.type,
+                                keyword
+                            )}
+                        </div>
+
+
+                        <div class="label">
+                            위치
+                        </div>
+
+                        <div>
+                            ${highlight(
+                                item.location,
+                                keyword
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div class="phone-area">
+
+                        <a
+                            class="phone"
+                            href="tel:${tel}"
+                        >
+                            ☎ ${highlight(
+                                phone,
+                                keyword
+                            )}
+                        </a>
+
+
+                        <button
+                            class="copy-button"
+                            onclick="copyPhone('${phone}')"
+                        >
+                            복사
+                        </button>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }).join("");
+
+}
+
+
+/*
+==================================================
+전화번호 복사
+==================================================
+*/
+
+function copyPhone(phone) {
+
+    navigator.clipboard
+        .writeText(phone)
+        .then(() => {
+
+            alert(
+                "전화번호가 복사되었습니다."
+            );
+
+        })
+        .catch(() => {
+
+            prompt(
+                "전화번호를 복사하세요.",
+                phone
+            );
+
+        });
+
+}
+
+
+/*
+==================================================
+검색창 Enter
+==================================================
+*/
+
+document
+    .getElementById("searchInput")
+    .addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Enter") {
+                searchData();
+            }
+
+        }
+    );
+
+
+/*
+==================================================
+필터 변경 시 자동 검색
+==================================================
+*/
+
+document
+    .getElementById("departmentFilter")
+    .addEventListener(
+        "change",
+        searchData
+    );
+
+
+document
+    .getElementById("typeFilter")
+    .addEventListener(
+        "change",
+        searchData
+    );
+
+
+/*
+==================================================
+실행
+==================================================
+*/
+
+createDepartmentList();
+
+createTypeList();
+
+searchData();
+
+</script>
+
+</body>
+</html>
